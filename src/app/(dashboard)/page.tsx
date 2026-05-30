@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
+import Onboarding from '@/components/dashboard/Onboarding'
 
 type Stats = { imoveis: number; agendados: number; pendentes: number }
 type Post = { id: string; titulo: string; tipo: string; plataformas: string[]; status: string; agendado_para: string }
@@ -64,6 +65,8 @@ export default function HomePage() {
 
   return (
     <div>
+      <Onboarding />
+
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 22, fontWeight: 700 }}>{saudacao}! 👋</div>
