@@ -74,7 +74,7 @@ export default function CriarPage() {
         body: JSON.stringify({ imovel, tipo: 'Carrossel', foco, tom })
       })
       const json = await res.json()
-      setLegenda(json.legenda || 'Erro ao gerar. Verifique a chave OpenAI.')
+      setLegenda(json.legenda || json.error || 'Erro ao gerar. Verifique a chave OpenAI.')
     } catch {
       setLegenda('Erro ao conectar com a IA.')
     }

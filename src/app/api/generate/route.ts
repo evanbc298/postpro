@@ -37,8 +37,13 @@ Retorne apenas a legenda, sem explicações.`
     }),
   })
 
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ error: 'Chave OpenAI não configurada no servidor.' }, { status: 500 })
+  }
+
   if (!res.ok) {
-    return NextResponse.json({ error: 'Erro ao gerar legenda' }, { status: 500 })
+    const err = await res.json().catch(() => ({}))
+    return NextResponse.json({ error: `OpenAI erro ${res.status}: ${err?.error?.message || 'falha desconhecida'}` }, { status: 500 })
   }
 
   const data = await res.json()
