@@ -1,24 +1,68 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+/* ── Slides de exemplo (template Elegante) ── */
+const slides = [
+  {
+    bg: 'linear-gradient(160deg,#1a3a6c 0%,#2d6a9f 50%,#0b1120 100%)',
+    emoji: '🏙️', tipo: 'APARTAMENTO', titulo: 'Apto 3 quartos', local: 'Moema, SP',
+    preco: 'R$ 850.000', detalhe: '120 m² · 2 vagas',
+  },
+  {
+    bg: 'linear-gradient(160deg,#1a3c2a 0%,#2d7a4f 50%,#0b1120 100%)',
+    emoji: '🌿', tipo: 'CASA', titulo: 'Casa com piscina', local: 'Alphaville, SP',
+    preco: 'R$ 2.400.000', detalhe: '380 m² · 4 vagas',
+  },
+  {
+    bg: 'linear-gradient(160deg,#3c1a6c 0%,#6a3a9f 50%,#0b1120 100%)',
+    emoji: '🏠', tipo: 'COBERTURA', titulo: 'Cobertura duplex', local: 'Brooklin, SP',
+    preco: 'R$ 1.150.000', detalhe: '200 m² · 3 vagas',
+  },
+  {
+    bg: 'linear-gradient(160deg,#4a2a1a 0%,#9f6a2d 50%,#0b1120 100%)',
+    emoji: '☀️', tipo: 'LANÇAMENTO', titulo: 'Jardins Residencial', local: 'Campinas, SP',
+    preco: 'A partir de R$ 620.000', detalhe: '70–95 m² · 1–2 vagas',
+  },
+]
 
 const palavras = ['Instagram', 'Facebook', 'Redes Sociais']
 
 export default function LandingPage() {
+  const [slideAtivo, setSlideAtivo] = useState(0)
   const [palavra, setPalavra] = useState(0)
   const [visivel, setVisivel] = useState(true)
+  const [publicando, setPublicando] = useState(false)
+  const [publicado, setPublicado] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Troca slides automaticamente
   useEffect(() => {
-    const interval = setInterval(() => {
-      setVisivel(false)
-      setTimeout(() => {
-        setPalavra(p => (p + 1) % palavras.length)
-        setVisivel(true)
-      }, 400)
-    }, 2500)
-    return () => clearInterval(interval)
+    intervalRef.current = setInterval(() => {
+      setSlideAtivo(s => (s + 1) % slides.length)
+    }, 3000)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
+
+  // Troca palavra no hero
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVisivel(false)
+      setTimeout(() => { setPalavra(p => (p + 1) % palavras.length); setVisivel(true) }, 400)
+    }, 2500)
+    return () => clearInterval(t)
+  }, [])
+
+  // Simula publicação ao clicar
+  function simularPublicacao() {
+    if (publicando || publicado) return
+    setPublicando(true)
+    setTimeout(() => { setPublicando(false); setPublicado(true) }, 2000)
+    setTimeout(() => setPublicado(false), 5000)
+  }
+
+  const s = slides[slideAtivo]
 
   return (
     <div style={{ background: '#0B1120', color: '#F0F4FF', minHeight: '100vh', overflowX: 'hidden' }}>
@@ -27,152 +71,291 @@ export default function LandingPage() {
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 40px', background: 'rgba(11,17,32,0.85)',
-        backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)'
+        padding: '14px 40px',
+        background: 'rgba(11,17,32,0.9)', backdropFilter: 'blur(14px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)'
       }}>
         <Image src="/logo.png" alt="Postpro" width={120} height={38} style={{ objectFit: 'contain' }} />
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <a href="/login" style={{
-            color: '#8899BB', fontSize: 13, textDecoration: 'none',
-            padding: '7px 16px', borderRadius: 7, transition: 'color .15s'
-          }}>Entrar</a>
+          <a href="/login" style={{ color: '#8899BB', fontSize: 13, textDecoration: 'none', padding: '7px 16px' }}>
+            Entrar
+          </a>
           <a href="#setup" style={{
             background: '#00AAFF', color: '#fff', fontSize: 13, fontWeight: 700,
             textDecoration: 'none', padding: '8px 20px', borderRadius: 8,
-            boxShadow: '0 4px 16px rgba(0,170,255,0.35)', transition: 'transform .15s'
+            boxShadow: '0 4px 16px rgba(0,170,255,0.35)'
           }}>Quero o setup →</a>
         </div>
       </nav>
 
       {/* HERO */}
       <section style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', textAlign: 'center', padding: '120px 24px 80px',
-        position: 'relative', overflow: 'hidden'
+        minHeight: '100vh', padding: '120px 40px 80px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 60, flexWrap: 'wrap', position: 'relative', overflow: 'hidden',
+        maxWidth: 1200, margin: '0 auto'
       }}>
-        {/* Glow de fundo */}
-        <div style={{
-          position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
-          width: 600, height: 600, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,170,255,0.12) 0%, transparent 70%)',
-          pointerEvents: 'none'
-        }} />
+        {/* Partículas de fundo */}
+        {[...Array(6)].map((_, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            width: i % 2 === 0 ? 300 : 200,
+            height: i % 2 === 0 ? 300 : 200,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, rgba(0,170,255,${0.04 + i * 0.01}) 0%, transparent 70%)`,
+            top: `${10 + i * 15}%`,
+            left: `${i * 18}%`,
+            pointerEvents: 'none',
+            animation: `float${i % 3} ${6 + i}s ease-in-out infinite`,
+          }} />
+        ))}
 
-        <div style={{
-          display: 'inline-block', background: 'rgba(0,170,255,0.1)',
-          border: '1px solid rgba(0,170,255,0.25)', borderRadius: 20,
-          padding: '5px 14px', fontSize: 11, fontWeight: 600,
-          color: '#33BBFF', letterSpacing: '.05em', marginBottom: 24
-        }}>
-          ✦ CONTEÚDO INTELIGENTE PARA O MERCADO IMOBILIÁRIO
-        </div>
-
-        <h1 style={{
-          fontSize: 'clamp(32px, 5vw, 62px)', fontWeight: 900,
-          lineHeight: 1.1, marginBottom: 12, maxWidth: 800,
-          letterSpacing: '-1.5px'
-        }}>
-          Seu imóvel no{' '}
-          <span style={{
-            color: '#00AAFF',
-            transition: 'opacity 0.3s',
-            opacity: visivel ? 1 : 0,
-            display: 'inline-block',
-          }}>
-            {palavras[palavra]}
-          </span>
-          <br />sem precisar de designer.
-        </h1>
-
-        <p style={{
-          fontSize: 18, color: '#8899BB', maxWidth: 520,
-          lineHeight: 1.7, marginBottom: 40
-        }}>
-          O Postpro pega as fotos do seu imóvel, gera o carrossel com sua logo,
-          escreve a legenda com IA e publica automaticamente. Você só aprova.
-        </p>
-
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <a href="#setup" style={{
-            background: '#00AAFF', color: '#fff', fontSize: 15, fontWeight: 700,
-            textDecoration: 'none', padding: '14px 32px', borderRadius: 10,
-            boxShadow: '0 6px 24px rgba(0,170,255,0.4)',
-          }}>Quero meu sistema agora →</a>
-          <a href="#como-funciona" style={{
-            background: 'rgba(255,255,255,0.05)', color: '#F0F4FF', fontSize: 14,
-            textDecoration: 'none', padding: '14px 28px', borderRadius: 10,
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>Ver como funciona</a>
-        </div>
-
-        {/* Mock carrossel animado */}
-        <div style={{ marginTop: 64, position: 'relative', maxWidth: 340 }}>
+        {/* Texto */}
+        <div style={{ flex: '1 1 420px', maxWidth: 560, position: 'relative', zIndex: 1 }}>
           <div style={{
-            width: 220, height: 275, borderRadius: 16, overflow: 'hidden',
-            background: 'linear-gradient(160deg,#1A3A6C,#0B1120)',
-            border: '1px solid rgba(0,170,255,0.2)',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
-            position: 'relative', margin: '0 auto'
+            display: 'inline-block', background: 'rgba(0,170,255,0.1)',
+            border: '1px solid rgba(0,170,255,0.25)', borderRadius: 20,
+            padding: '5px 14px', fontSize: 11, fontWeight: 600,
+            color: '#33BBFF', letterSpacing: '.05em', marginBottom: 24
+          }}>✦ CONTEÚDO INTELIGENTE PARA O MERCADO IMOBILIÁRIO</div>
+
+          <h1 style={{
+            fontSize: 'clamp(30px,4.5vw,58px)', fontWeight: 900,
+            lineHeight: 1.1, marginBottom: 16, letterSpacing: '-1.5px'
           }}>
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.2) 60%, transparent 100%)'
-            }} />
+            Seu imóvel no{' '}
+            <span style={{
+              color: '#00AAFF', transition: 'opacity 0.3s',
+              opacity: visivel ? 1 : 0, display: 'inline-block'
+            }}>{palavras[palavra]}</span>
+            <br />sem precisar de designer.
+          </h1>
+
+          <p style={{ fontSize: 17, color: '#8899BB', lineHeight: 1.7, marginBottom: 36 }}>
+            Sobe as fotos do imóvel, a IA cria o carrossel com sua logo e publica
+            automaticamente no Instagram e Facebook. Você só aprova.
+          </p>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: 32, marginBottom: 40 }}>
+            {[
+              { num: '10s', label: 'pra gerar um carrossel' },
+              { num: '100%', label: 'com sua identidade' },
+              { num: 'Zero', label: 'custo de designer' },
+            ].map(st => (
+              <div key={st.label}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: '#00AAFF' }}>{st.num}</div>
+                <div style={{ fontSize: 11, color: '#4A5A7A', marginTop: 2 }}>{st.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <a href="#setup" style={{
+              background: '#00AAFF', color: '#fff', fontSize: 14, fontWeight: 700,
+              textDecoration: 'none', padding: '13px 28px', borderRadius: 9,
+              boxShadow: '0 6px 24px rgba(0,170,255,0.4)',
+            }}>Quero meu sistema agora →</a>
+            <a href="#demo" style={{
+              background: 'rgba(255,255,255,0.05)', color: '#F0F4FF', fontSize: 13,
+              textDecoration: 'none', padding: '13px 24px', borderRadius: 9,
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>Ver na prática ↓</a>
+          </div>
+        </div>
+
+        {/* Carrossel animado */}
+        <div style={{ flex: '0 0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Slide principal */}
+          <div style={{
+            width: 240, height: 300, borderRadius: 18, overflow: 'hidden',
+            background: s.bg, position: 'relative',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,170,255,0.15)',
+            transition: 'background 0.8s ease',
+          }}>
+            {/* Overlay */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.15) 55%,transparent 100%)' }} />
+
+            {/* Emoji central */}
+            <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 56, opacity: .25 }}>
+              {s.emoji}
+            </div>
+
+            {/* Logo */}
             <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 22, height: 22, background: '#00AAFF', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>P</div>
+              <div style={{ width: 24, height: 24, background: '#00AAFF', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff' }}>P</div>
               <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>POSTPRO</span>
             </div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 16px' }}>
-              <div style={{ fontSize: 9, color: '#33BBFF', marginBottom: 5, fontWeight: 700, letterSpacing: '.06em' }}>APARTAMENTO</div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 4 }}>Apto 3 quartos — Moema</div>
-              <div style={{ fontSize: 15, fontWeight: 900, color: '#00AAFF' }}>R$ 850.000</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,.5)', marginTop: 2 }}>120 m² · São Paulo</div>
+            <div style={{ position: 'absolute', top: 14, right: 14, fontSize: 9, color: 'rgba(255,255,255,.5)' }}>
+              {slideAtivo + 1}/{slides.length}
+            </div>
+
+            {/* Conteúdo */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 18px' }}>
+              <div style={{ fontSize: 9, color: '#33BBFF', fontWeight: 700, letterSpacing: '.08em', marginBottom: 5 }}>
+                {s.tipo}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', marginBottom: 4, lineHeight: 1.2 }}>
+                {s.titulo}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: '#00AAFF', marginBottom: 3 }}>
+                {s.preco}
+              </div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,.5)' }}>
+                {s.detalhe} · {s.local}
+              </div>
             </div>
           </div>
 
-          {/* Slides empilhados */}
+          {/* Indicadores */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+            {slides.map((_, i) => (
+              <div key={i} onClick={() => setSlideAtivo(i)} style={{
+                width: i === slideAtivo ? 20 : 6, height: 6,
+                borderRadius: 3, cursor: 'pointer',
+                background: i === slideAtivo ? '#00AAFF' : 'rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+              }} />
+            ))}
+          </div>
+
+          {/* Botão publicar simulado */}
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <button onClick={simularPublicacao} style={{
+              background: publicado ? 'rgba(16,185,129,0.15)' : 'rgba(0,170,255,0.12)',
+              border: `1px solid ${publicado ? 'rgba(16,185,129,0.3)' : 'rgba(0,170,255,0.25)'}`,
+              color: publicado ? '#6EE7B7' : '#33BBFF',
+              borderRadius: 8, padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              cursor: publicado ? 'default' : 'pointer',
+              transition: 'all 0.3s',
+            }}>
+              {publicando ? '⏳ Publicando...' : publicado ? '✓ Publicado no Instagram!' : '↗ Publicar agora'}
+            </button>
+          </div>
+
+          {/* Slides de fundo empilhados */}
           <div style={{
-            position: 'absolute', top: 12, right: -20, width: 180, height: 225,
-            background: 'linear-gradient(160deg,#1A4040,#0B1120)',
-            borderRadius: 14, border: '1px solid rgba(255,255,255,0.06)',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.4)', zIndex: -1
+            position: 'absolute', top: 16, right: -24, width: 200, height: 250, zIndex: -1,
+            background: slides[(slideAtivo + 1) % slides.length].bg,
+            borderRadius: 16, opacity: .5,
+            boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+            transition: 'background 0.8s ease',
           }} />
           <div style={{
-            position: 'absolute', top: 24, right: -36, width: 160, height: 200,
-            background: '#131C2E', borderRadius: 14,
-            border: '1px solid rgba(255,255,255,0.04)',
-            boxShadow: '0 8px 20px rgba(0,0,0,0.3)', zIndex: -2
+            position: 'absolute', top: 32, right: -44, width: 180, height: 225, zIndex: -2,
+            background: '#131C2E', borderRadius: 14, opacity: .3,
           }} />
 
+          {/* Tag flutuante */}
           <div style={{
-            position: 'absolute', bottom: -12, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,170,255,0.15)', border: '1px solid rgba(0,170,255,0.3)',
-            borderRadius: 8, padding: '5px 14px', fontSize: 11, color: '#33BBFF', fontWeight: 600,
-            whiteSpace: 'nowrap'
-          }}>✦ Gerado com IA em 10 segundos</div>
+            position: 'absolute', top: -20, right: -30,
+            background: '#131C2E', border: '1px solid rgba(0,170,255,0.2)',
+            borderRadius: 10, padding: '8px 14px', fontSize: 11, color: '#33BBFF',
+            fontWeight: 600, whiteSpace: 'nowrap',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            animation: 'floatTag 3s ease-in-out infinite',
+          }}>✦ IA gerando legenda...</div>
+        </div>
+      </section>
+
+      {/* DEMO — imoveis passando */}
+      <section id="demo" style={{ padding: '80px 0', background: '#0E1628', overflow: 'hidden' }}>
+        <div style={{ textAlign: 'center', marginBottom: 48, padding: '0 24px' }}>
+          <div style={{ fontSize: 13, color: '#4A5A7A', fontWeight: 600, letterSpacing: '.08em', marginBottom: 12 }}>
+            VEJA NA PRÁTICA
+          </div>
+          <h2 style={{ fontSize: 'clamp(22px,3.5vw,38px)', fontWeight: 800 }}>
+            É assim que seus imóveis vão aparecer.
+          </h2>
+          <p style={{ fontSize: 14, color: '#8899BB', marginTop: 12 }}>
+            Cada imóvel vira um carrossel profissional com sua logo. Automático.
+          </p>
+        </div>
+
+        {/* Faixa de slides rolando */}
+        <div style={{ position: 'relative', overflow: 'hidden' }}>
+          <div style={{
+            display: 'flex', gap: 16, padding: '8px 0',
+            animation: 'scrollLeft 20s linear infinite',
+            width: 'max-content',
+          }}>
+            {[...slides, ...slides, ...slides].map((sl, i) => (
+              <div key={i} style={{
+                width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
+                background: sl.bg, position: 'relative', flexShrink: 0,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
+                <div style={{ position: 'absolute', fontSize: 36, opacity: .2, top: '28%', left: '50%', transform: 'translate(-50%,-50%)' }}>{sl.emoji}</div>
+                <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
+                  <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
+                </div>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
+                  <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.preco}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Gradientes nas bordas */}
+          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 80, background: 'linear-gradient(to right,#0E1628,transparent)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 80, background: 'linear-gradient(to left,#0E1628,transparent)', pointerEvents: 'none' }} />
+        </div>
+
+        {/* Segunda faixa (sentido oposto) */}
+        <div style={{ position: 'relative', overflow: 'hidden', marginTop: 16 }}>
+          <div style={{
+            display: 'flex', gap: 16, padding: '8px 0',
+            animation: 'scrollRight 25s linear infinite',
+            width: 'max-content',
+          }}>
+            {[...slides.slice().reverse(), ...slides.slice().reverse(), ...slides.slice().reverse()].map((sl, i) => (
+              <div key={i} style={{
+                width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
+                background: sl.bg, position: 'relative', flexShrink: 0,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                opacity: 0.7,
+              }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
+                <div style={{ position: 'absolute', fontSize: 36, opacity: .2, top: '28%', left: '50%', transform: 'translate(-50%,-50%)' }}>{sl.emoji}</div>
+                <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
+                  <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
+                </div>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
+                  <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.preco}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 80, background: 'linear-gradient(to right,#0E1628,transparent)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 80, background: 'linear-gradient(to left,#0E1628,transparent)', pointerEvents: 'none' }} />
         </div>
       </section>
 
       {/* DOR */}
       <section style={{ padding: '80px 24px', maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ fontSize: 13, color: '#4A5A7A', fontWeight: 600, letterSpacing: '.08em', marginBottom: 12 }}>A REALIDADE DO MERCADO</div>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 800, lineHeight: 1.2 }}>
+          <h2 style={{ fontSize: 'clamp(22px,3.5vw,38px)', fontWeight: 800, lineHeight: 1.2 }}>
             Você sabe que precisa postar.<br />
             <span style={{ color: '#4A5A7A' }}>Mas nunca sobra tempo.</span>
           </h2>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16 }}>
           {[
             { icon: '⏰', titulo: 'Sem tempo', texto: 'Você passa o dia em visitas, negociações e burocracia. Criar post ficou pra depois — e "depois" nunca chega.' },
-            { icon: '💸', titulo: 'Designer é caro', texto: 'R$ 800, R$ 1.500 por mês só pra ter carrossel no Instagram. Sem garantia de resultado, sem exclusividade.' },
-            { icon: '📉', titulo: 'Concorrente aparece mais', texto: 'Enquanto você some das redes, o corretor da frente posta todo dia e fica na cabeça do cliente na hora de comprar.' },
+            { icon: '💸', titulo: 'Designer é caro', texto: 'R$ 800, R$ 1.500 por mês só pra ter carrossel no Instagram. Sem garantia de resultado.' },
+            { icon: '📉', titulo: 'Concorrente aparece mais', texto: 'Enquanto você some das redes, o corretor ao lado posta todo dia e fica na cabeça do cliente na hora de comprar.' },
           ].map(d => (
-            <div key={d.titulo} style={{
-              background: '#131C2E', border: '1px solid #1E2D47',
-              borderRadius: 14, padding: 24,
-            }}>
+            <div key={d.titulo} style={{ background: '#131C2E', border: '1px solid #1E2D47', borderRadius: 14, padding: 24 }}>
               <div style={{ fontSize: 32, marginBottom: 14 }}>{d.icon}</div>
               <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>{d.titulo}</div>
               <div style={{ fontSize: 13, color: '#8899BB', lineHeight: 1.6 }}>{d.texto}</div>
@@ -182,24 +365,20 @@ export default function LandingPage() {
       </section>
 
       {/* COMO FUNCIONA */}
-      <section id="como-funciona" style={{ padding: '80px 24px', background: '#0E1628' }}>
+      <section style={{ padding: '80px 24px', background: '#0E1628' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: '#4A5A7A', fontWeight: 600, letterSpacing: '.08em', marginBottom: 12 }}>SIMPLES ASSIM</div>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 800, marginBottom: 56 }}>
-            3 passos. Do imóvel ao Instagram.
+          <div style={{ fontSize: 13, color: '#4A5A7A', fontWeight: 600, letterSpacing: '.08em', marginBottom: 12 }}>3 PASSOS</div>
+          <h2 style={{ fontSize: 'clamp(22px,3.5vw,38px)', fontWeight: 800, marginBottom: 56 }}>
+            Do imóvel ao Instagram em minutos.
           </h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 32 }}>
             {[
-              { num: '01', titulo: 'Cadastra o imóvel', texto: 'Sobe as fotos, o preço e os diferenciais. Leva 2 minutos.' },
-              { num: '02', titulo: 'IA cria o conteúdo', texto: 'O Postpro monta o carrossel com sua logo e escreve a legenda automaticamente.' },
-              { num: '03', titulo: 'Aprova e publica', texto: 'Você vê, aprova e o sistema publica no horário que você escolher. Sem mais trabalho.' },
+              { num: '01', titulo: 'Cadastra o imóvel', texto: 'Sobe as fotos, preço e diferenciais. Leva 2 minutos.' },
+              { num: '02', titulo: 'IA cria o conteúdo', texto: 'Carrossel com sua logo + legenda gerada automaticamente.' },
+              { num: '03', titulo: 'Aprova e publica', texto: 'Um clique. O sistema posta no horário certo pra você.' },
             ].map(p => (
-              <div key={p.num} style={{ textAlign: 'left', position: 'relative' }}>
-                <div style={{
-                  fontSize: 48, fontWeight: 900, color: 'rgba(0,170,255,0.15)',
-                  lineHeight: 1, marginBottom: 12, letterSpacing: '-2px'
-                }}>{p.num}</div>
+              <div key={p.num} style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: 52, fontWeight: 900, color: 'rgba(0,170,255,0.15)', lineHeight: 1, marginBottom: 12, letterSpacing: '-2px' }}>{p.num}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{p.titulo}</div>
                 <div style={{ fontSize: 13, color: '#8899BB', lineHeight: 1.6 }}>{p.texto}</div>
               </div>
@@ -210,11 +389,9 @@ export default function LandingPage() {
 
       {/* FEATURES */}
       <section style={{ padding: '80px 24px', maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <h2 style={{ fontSize: 'clamp(24px,3.5vw,38px)', fontWeight: 800 }}>
-            Tudo que você precisa. Nada que não precisa.
-          </h2>
-        </div>
+        <h2 style={{ fontSize: 'clamp(22px,3.5vw,36px)', fontWeight: 800, textAlign: 'center', marginBottom: 40 }}>
+          Tudo que você precisa. Nada que não precisa.
+        </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12 }}>
           {[
             { emoji: '🖼️', label: 'Carrossel com sua logo' },
@@ -222,11 +399,12 @@ export default function LandingPage() {
             { emoji: '📅', label: 'Agendamento automático' },
             { emoji: '📷', label: 'Instagram + Facebook' },
             { emoji: '🏠', label: 'Gestão de imóveis' },
-            { emoji: '📊', label: 'Relatório simples' },
+            { emoji: '📊', label: 'Relatórios simples' },
           ].map(f => (
             <div key={f.label} style={{
               background: '#131C2E', border: '1px solid #1E2D47', borderRadius: 12,
-              padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12
+              padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12,
+              transition: 'border-color .2s',
             }}>
               <span style={{ fontSize: 22 }}>{f.emoji}</span>
               <span style={{ fontSize: 13, fontWeight: 500 }}>{f.label}</span>
@@ -235,22 +413,21 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA / SETUP */}
+      {/* CTA */}
       <section id="setup" style={{ padding: '80px 24px' }}>
         <div style={{
           maxWidth: 600, margin: '0 auto', textAlign: 'center',
           background: 'linear-gradient(135deg,rgba(0,170,255,0.12),rgba(0,170,255,0.04))',
           border: '1px solid rgba(0,170,255,0.25)', borderRadius: 20, padding: '56px 40px'
         }}>
-          <div style={{ fontSize: 32, marginBottom: 16 }}>🚀</div>
+          <div style={{ fontSize: 36, marginBottom: 16 }}>🚀</div>
           <h2 style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 800, marginBottom: 14 }}>
-            Comece hoje com o setup completo
+            Comece com o setup completo
           </h2>
           <p style={{ fontSize: 14, color: '#8899BB', lineHeight: 1.7, marginBottom: 32 }}>
-            A gente configura o sistema com a sua logo, conecta suas redes sociais
-            e te entrega pronto pra usar. Você só precisa cadastrar os imóveis e aprovar os posts.
+            Configuramos o sistema com a sua logo, conectamos suas redes sociais
+            e entregamos pronto pra usar.
           </p>
-
           <div style={{
             background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 12, padding: '20px 24px', marginBottom: 28, textAlign: 'left'
@@ -258,47 +435,58 @@ export default function LandingPage() {
             <div style={{ fontSize: 11, color: '#4A5A7A', fontWeight: 600, letterSpacing: '.06em', marginBottom: 12 }}>O QUE VEM NO SETUP</div>
             {[
               'Sistema configurado com sua logo e identidade visual',
-              'Contas do Instagram e Facebook conectadas',
+              'Instagram e Facebook conectados e prontos',
               'Primeiro carrossel criado pra você ver funcionando',
-              'Suporte direto pra dúvidas na primeira semana',
+              'Suporte na primeira semana de uso',
             ].map(item => (
-              <div key={item} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
-                <span style={{ color: '#00AAFF', flexShrink: 0, marginTop: 1 }}>✓</span>
+              <div key={item} style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                <span style={{ color: '#00AAFF', flexShrink: 0 }}>✓</span>
                 <span style={{ fontSize: 13, color: '#8899BB' }}>{item}</span>
               </div>
             ))}
           </div>
-
           <a href="/cadastro" style={{
             display: 'block', background: '#00AAFF', color: '#fff',
             fontSize: 15, fontWeight: 700, textDecoration: 'none',
             padding: '16px 32px', borderRadius: 10,
             boxShadow: '0 6px 24px rgba(0,170,255,0.4)',
-          }}>
-            Quero meu setup →
-          </a>
+          }}>Quero meu setup →</a>
           <div style={{ fontSize: 11, color: '#4A5A7A', marginTop: 14 }}>
-            Entre em contato após o cadastro pra agendar o setup
+            Entre em contato após o cadastro pra agendar
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer style={{
-        borderTop: '1px solid #1E2D47', padding: '32px 40px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 12
+        borderTop: '1px solid #1E2D47', padding: '28px 40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12
       }}>
-        <Image src="/logo.png" alt="Postpro" width={100} height={32} style={{ objectFit: 'contain' }} />
-        <div style={{ fontSize: 12, color: '#4A5A7A' }}>
-          Conteúdo inteligente para quem vende imóveis
-        </div>
-        <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-          <a href="/login" style={{ color: '#4A5A7A', textDecoration: 'none' }}>Entrar</a>
-          <a href="/cadastro" style={{ color: '#4A5A7A', textDecoration: 'none' }}>Cadastrar</a>
+        <Image src="/logo.png" alt="Postpro" width={100} height={30} style={{ objectFit: 'contain' }} />
+        <div style={{ fontSize: 12, color: '#4A5A7A' }}>Conteúdo inteligente para quem vende imóveis</div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <a href="/login" style={{ fontSize: 12, color: '#4A5A7A', textDecoration: 'none' }}>Entrar</a>
+          <a href="/cadastro" style={{ fontSize: 12, color: '#4A5A7A', textDecoration: 'none' }}>Cadastrar</a>
         </div>
       </footer>
 
+      <style>{`
+        @keyframes scrollLeft {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-33.33%); }
+        }
+        @keyframes scrollRight {
+          from { transform: translateX(-33.33%); }
+          to   { transform: translateX(0); }
+        }
+        @keyframes floatTag {
+          0%,100% { transform: translateY(0); }
+          50%      { transform: translateY(-8px); }
+        }
+        @keyframes float0 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+        @keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+        @keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+      `}</style>
     </div>
   )
 }
