@@ -6,24 +6,19 @@ import { useEffect, useRef, useState } from 'react'
 /* ── Slides de exemplo (template Elegante) ── */
 const slides = [
   {
-    bg: 'linear-gradient(160deg,#1a3a6c 0%,#2d6a9f 50%,#0b1120 100%)',
-    emoji: '🏙️', tipo: 'APARTAMENTO', titulo: 'Apto 3 quartos', local: 'Moema, SP',
-    preco: 'R$ 850.000', detalhe: '120 m² · 2 vagas',
+    img: '/imovel-1.jpg',
+    tipo: 'LANÇAMENTO', titulo: 'Beach Market Tower', local: 'Balneário Camboriú, SC',
+    preco: 'A consultar', detalhe: 'Alto padrão · Frente mar',
   },
   {
-    bg: 'linear-gradient(160deg,#1a3c2a 0%,#2d7a4f 50%,#0b1120 100%)',
-    emoji: '🌿', tipo: 'CASA', titulo: 'Casa com piscina', local: 'Alphaville, SP',
-    preco: 'R$ 2.400.000', detalhe: '380 m² · 4 vagas',
+    img: '/imovel-2.jpg',
+    tipo: 'LANÇAMENTO', titulo: 'Residencial Praia Brava', local: 'Itajaí, SC',
+    preco: 'A consultar', detalhe: 'Piscina infinity · Vista panorâmica',
   },
   {
-    bg: 'linear-gradient(160deg,#3c1a6c 0%,#6a3a9f 50%,#0b1120 100%)',
-    emoji: '🏠', tipo: 'COBERTURA', titulo: 'Cobertura duplex', local: 'Brooklin, SP',
-    preco: 'R$ 1.150.000', detalhe: '200 m² · 3 vagas',
-  },
-  {
-    bg: 'linear-gradient(160deg,#4a2a1a 0%,#9f6a2d 50%,#0b1120 100%)',
-    emoji: '☀️', tipo: 'LANÇAMENTO', titulo: 'Jardins Residencial', local: 'Campinas, SP',
-    preco: 'A partir de R$ 620.000', detalhe: '70–95 m² · 1–2 vagas',
+    img: '/imovel-3.jpg',
+    tipo: 'LANÇAMENTO', titulo: 'Anastásia Tower', local: 'Balneário Camboriú, SC',
+    preco: 'A consultar', detalhe: 'Arquitetura exclusiva · Alto padrão',
   },
 ]
 
@@ -169,17 +164,16 @@ export default function LandingPage() {
           {/* Slide principal */}
           <div style={{
             width: 240, height: 300, borderRadius: 18, overflow: 'hidden',
-            background: s.bg, position: 'relative',
+            background: '#0B1120', position: 'relative',
             boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,170,255,0.15)',
-            transition: 'background 0.8s ease',
           }}>
+            {/* Foto real */}
+            <img src={s.img} alt={s.titulo} style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', transition: 'opacity 0.6s ease',
+            }} />
             {/* Overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.15) 55%,transparent 100%)' }} />
-
-            {/* Emoji central */}
-            <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: 56, opacity: .25 }}>
-              {s.emoji}
-            </div>
 
             {/* Logo */}
             <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -236,11 +230,12 @@ export default function LandingPage() {
           {/* Slides de fundo empilhados */}
           <div style={{
             position: 'absolute', top: 16, right: -24, width: 200, height: 250, zIndex: -1,
-            background: slides[(slideAtivo + 1) % slides.length].bg,
-            borderRadius: 16, opacity: .5,
-            boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-            transition: 'background 0.8s ease',
-          }} />
+            background: '#0B1120', borderRadius: 16, opacity: .6,
+            boxShadow: '0 16px 40px rgba(0,0,0,0.5)', overflow: 'hidden',
+          }}>
+            <img src={slides[(slideAtivo + 1) % slides.length].img} alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
           <div style={{
             position: 'absolute', top: 32, right: -44, width: 180, height: 225, zIndex: -2,
             background: '#131C2E', borderRadius: 14, opacity: .3,
@@ -282,12 +277,12 @@ export default function LandingPage() {
             {[...slides, ...slides, ...slides].map((sl, i) => (
               <div key={i} style={{
                 width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
-                background: sl.bg, position: 'relative', flexShrink: 0,
+                background: '#0B1120', position: 'relative', flexShrink: 0,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 border: '1px solid rgba(255,255,255,0.06)',
               }}>
+                <img src={sl.img} alt={sl.titulo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
-                <div style={{ position: 'absolute', fontSize: 36, opacity: .2, top: '28%', left: '50%', transform: 'translate(-50%,-50%)' }}>{sl.emoji}</div>
                 <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
                   <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
@@ -295,7 +290,7 @@ export default function LandingPage() {
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
                   <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.preco}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.local}</div>
                 </div>
               </div>
             ))}
@@ -316,13 +311,13 @@ export default function LandingPage() {
             {[...slides.slice().reverse(), ...slides.slice().reverse(), ...slides.slice().reverse()].map((sl, i) => (
               <div key={i} style={{
                 width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
-                background: sl.bg, position: 'relative', flexShrink: 0,
+                background: '#0B1120', position: 'relative', flexShrink: 0,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 border: '1px solid rgba(255,255,255,0.06)',
-                opacity: 0.7,
+                opacity: 0.75,
               }}>
+                <img src={sl.img} alt={sl.titulo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
-                <div style={{ position: 'absolute', fontSize: 36, opacity: .2, top: '28%', left: '50%', transform: 'translate(-50%,-50%)' }}>{sl.emoji}</div>
                 <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
                   <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
@@ -330,7 +325,7 @@ export default function LandingPage() {
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
                   <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.preco}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.local}</div>
                 </div>
               </div>
             ))}
