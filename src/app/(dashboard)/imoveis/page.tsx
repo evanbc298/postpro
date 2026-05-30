@@ -191,12 +191,13 @@ export default function ImoveisPage() {
       {modal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
-          overflowY: 'auto', padding: '20px 0'
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 200,
+          overflowY: 'auto', padding: '24px 16px'
         }} onClick={e => e.target === e.currentTarget && setModal(false)}>
           <div style={{
             background: 'var(--bg2)', border: '1px solid var(--border)',
-            borderRadius: 14, padding: 24, width: 500, maxWidth: '94vw'
+            borderRadius: 14, padding: 24, width: 500, maxWidth: '100%',
+            maxHeight: 'calc(100vh - 48px)', overflowY: 'auto', flexShrink: 0,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: 15, fontWeight: 600 }}>Cadastrar imóvel</div>
