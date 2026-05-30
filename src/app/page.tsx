@@ -164,14 +164,12 @@ export default function LandingPage() {
           {/* Slide principal */}
           <div style={{
             width: 240, height: 300, borderRadius: 18, overflow: 'hidden',
-            background: '#0B1120', position: 'relative',
+            position: 'relative',
+            backgroundImage: `url('${s.img}')`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
             boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,170,255,0.15)',
+            transition: 'background-image 0.5s ease',
           }}>
-            {/* Foto real */}
-            <img src={s.img} alt={s.titulo} style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', transition: 'opacity 0.6s ease',
-            }} />
             {/* Overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.15) 55%,transparent 100%)' }} />
 
@@ -230,12 +228,11 @@ export default function LandingPage() {
           {/* Slides de fundo empilhados */}
           <div style={{
             position: 'absolute', top: 16, right: -24, width: 200, height: 250, zIndex: -1,
-            background: '#0B1120', borderRadius: 16, opacity: .6,
-            boxShadow: '0 16px 40px rgba(0,0,0,0.5)', overflow: 'hidden',
-          }}>
-            <img src={slides[(slideAtivo + 1) % slides.length].img} alt=""
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
+            borderRadius: 16, opacity: .5,
+            backgroundImage: `url('${slides[(slideAtivo + 1) % slides.length].img}')`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+          }} />
           <div style={{
             position: 'absolute', top: 32, right: -44, width: 180, height: 225, zIndex: -2,
             background: '#131C2E', borderRadius: 14, opacity: .3,
@@ -267,71 +264,29 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Faixa de slides rolando */}
-        <div style={{ position: 'relative', overflow: 'hidden' }}>
-          <div style={{
-            display: 'flex', gap: 16, padding: '8px 0',
-            animation: 'scrollLeft 20s linear infinite',
-            width: 'max-content',
-          }}>
-            {[...slides, ...slides, ...slides].map((sl, i) => (
-              <div key={i} style={{
-                width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
-                background: '#0B1120', position: 'relative', flexShrink: 0,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}>
-                <img src={sl.img} alt={sl.titulo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
-                <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
-                  <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
-                </div>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
-                  <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.local}</div>
-                </div>
+        {/* 3 cards lado a lado */}
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', padding: '0 24px' }}>
+          {slides.map((sl, i) => (
+            <div key={i} style={{
+              width: 220, height: 275, borderRadius: 16, overflow: 'hidden',
+              position: 'relative', flexShrink: 0,
+              backgroundImage: `url('${sl.img}')`,
+              backgroundSize: 'cover', backgroundPosition: 'center',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.1) 55%,transparent 100%)' }} />
+              <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <div style={{ width: 22, height: 22, background: '#00AAFF', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>P</div>
+                <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>POSTPRO</span>
               </div>
-            ))}
-          </div>
-
-          {/* Gradientes nas bordas */}
-          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 80, background: 'linear-gradient(to right,#0E1628,transparent)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 80, background: 'linear-gradient(to left,#0E1628,transparent)', pointerEvents: 'none' }} />
-        </div>
-
-        {/* Segunda faixa (sentido oposto) */}
-        <div style={{ position: 'relative', overflow: 'hidden', marginTop: 16 }}>
-          <div style={{
-            display: 'flex', gap: 16, padding: '8px 0',
-            animation: 'scrollRight 25s linear infinite',
-            width: 'max-content',
-          }}>
-            {[...slides.slice().reverse(), ...slides.slice().reverse(), ...slides.slice().reverse()].map((sl, i) => (
-              <div key={i} style={{
-                width: 170, height: 213, borderRadius: 14, overflow: 'hidden',
-                background: '#0B1120', position: 'relative', flexShrink: 0,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                opacity: 0.75,
-              }}>
-                <img src={sl.img} alt={sl.titulo} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%)' }} />
-                <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 18, height: 18, background: '#00AAFF', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: '#fff' }}>P</div>
-                  <span style={{ fontSize: 8, color: '#fff', fontWeight: 600 }}>POSTPRO</span>
-                </div>
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 10px 12px' }}>
-                  <div style={{ fontSize: 7, color: '#33BBFF', fontWeight: 700, letterSpacing: '.06em', marginBottom: 3 }}>{sl.tipo}</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{sl.titulo}</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#00AAFF' }}>{sl.local}</div>
-                </div>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 14px 16px' }}>
+                <div style={{ fontSize: 8, color: '#33BBFF', fontWeight: 700, letterSpacing: '.08em', marginBottom: 4 }}>{sl.tipo}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{sl.titulo}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)' }}>{sl.local}</div>
               </div>
-            ))}
-          </div>
-          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 80, background: 'linear-gradient(to right,#0E1628,transparent)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 80, background: 'linear-gradient(to left,#0E1628,transparent)', pointerEvents: 'none' }} />
+            </div>
+          ))}
         </div>
       </section>
 
