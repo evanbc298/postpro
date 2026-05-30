@@ -8,7 +8,7 @@ import { useState } from 'react'
 
 const nav = [
   { section: 'Principal', items: [
-    { href: '/', label: 'Início', emoji: '⊞' },
+    { href: '/inicio', label: 'Início', emoji: '⊞' },
     { href: '/imoveis', label: 'Imóveis', emoji: '🏠' },
   ]},
   { section: 'Conteúdo', items: [
