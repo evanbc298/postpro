@@ -6,17 +6,17 @@ import { useEffect, useRef, useState } from 'react'
 /* ── Slides de exemplo (template Elegante) ── */
 const slides = [
   {
-    img: '/imovel-1.jpg',
+    img: '/imovel-1.jpg.jpg',
     tipo: 'LANÇAMENTO', titulo: 'Beach Market Tower', local: 'Balneário Camboriú, SC',
     preco: 'A consultar', detalhe: 'Alto padrão · Frente mar',
   },
   {
-    img: '/imovel-2.jpg',
+    img: '/imovel-2.jpg.jpg',
     tipo: 'LANÇAMENTO', titulo: 'Residencial Praia Brava', local: 'Itajaí, SC',
     preco: 'A consultar', detalhe: 'Piscina infinity · Vista panorâmica',
   },
   {
-    img: '/imovel-3.jpg',
+    img: '/imovel-3.jpg.jpg',
     tipo: 'LANÇAMENTO', titulo: 'Anastásia Tower', local: 'Balneário Camboriú, SC',
     preco: 'A consultar', detalhe: 'Arquitetura exclusiva · Alto padrão',
   },
