@@ -1,4 +1,5 @@
 import Sidebar from '@/components/dashboard/Sidebar'
+import ChatIA from '@/components/dashboard/ChatIA'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,6 +8,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
         {children}
       </main>
+      <ChatIA />
     </div>
   )
 }

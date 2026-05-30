@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
 
 type Cliente = {
   id: string; email: string; nome: string; criado_em: string
@@ -8,15 +10,27 @@ type Cliente = {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const [total, setTotal] = useState(0)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/admin/usuarios')
-      .then(r => r.json())
-      .then(d => { setTotal(d.total); setClientes(d.clientes || []); setLoading(false) })
-  }, [])
+    async function load() {
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      const res = await fetch('/api/admin/usuarios')
+      if (res.status === 403) { router.push('/imoveis'); return }
+
+      const d = await res.json()
+      setTotal(d.total)
+      setClientes(d.clientes || [])
+      setLoading(false)
+    }
+    load()
+  }, [router])
 
   const totalImoveis  = clientes.reduce((s, c) => s + c.imoveis, 0)
   const totalPosts    = clientes.reduce((s, c) => s + c.posts, 0)

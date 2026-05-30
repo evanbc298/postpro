@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { toPng } from 'html-to-image'
 import { createClient } from '@/lib/supabase'
 
 type Foto = { url: string; is_capa: boolean }
@@ -29,6 +30,9 @@ export default function CriarPage() {
   const [salvo, setSalvo] = useState(false)
   const [config, setConfig] = useState<Config | null>(null)
   const [slideAtivo, setSlideAtivo] = useState(0)
+  const [gerandoImagens, setGerandoImagens] = useState(false)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const slideRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -88,10 +92,48 @@ export default function CriarPage() {
       titulo: `Carrossel – ${imovel.titulo}`,
       legenda, tipo: 'carrossel', plataformas, status,
       agendado_para: agendado,
+      media_urls: imageUrls.length > 0 ? imageUrls : null,
     })
     setSalvando(false)
     setSalvo(true)
     setTimeout(() => setSalvo(false), 3000)
+  }
+
+  async function gerarImagens() {
+    if (!slideRef.current || !imovel || slides.length === 0) return
+    setGerandoImagens(true)
+    setImageUrls([])
+
+    const sb = createClient()
+    const { data: { user } } = await sb.auth.getUser()
+    const urls: string[] = []
+
+    for (let i = 0; i < slides.length; i++) {
+      setSlideAtivo(i)
+      // aguarda o DOM atualizar com o novo slide
+      await new Promise(r => setTimeout(r, 400))
+
+      try {
+        const dataUrl = await toPng(slideRef.current, {
+          pixelRatio: Math.ceil(1080 / (slideRef.current.offsetWidth || 320)),
+          cacheBust: true,
+        })
+        const blob = await (await fetch(dataUrl)).blob()
+        const path = `${user?.id}/${imovelId}/slide_${i + 1}.png`
+        const { error } = await sb.storage
+          .from('carrosseis')
+          .upload(path, blob, { upsert: true, contentType: 'image/png' })
+        if (!error) {
+          const { data: { publicUrl } } = sb.storage.from('carrosseis').getPublicUrl(path)
+          urls.push(publicUrl)
+        }
+      } catch {
+        // slide ignorado se falhar
+      }
+    }
+
+    setImageUrls(urls)
+    setGerandoImagens(false)
   }
 
   function togglePlat(p: string) {
@@ -226,7 +268,7 @@ export default function CriarPage() {
           {/* Slide principal */}
           {imovel && slides.length > 0 ? (
             <>
-              <div style={{
+              <div ref={slideRef} style={{
                 width: '100%', maxWidth: 320, margin: '0 auto',
                 aspectRatio: '4/5', borderRadius: 14, overflow: 'hidden',
                 position: 'relative', background: '#0B1120',
@@ -345,6 +387,33 @@ export default function CriarPage() {
                   ⚠ Adicione fotos ao imóvel para ver o carrossel com as imagens reais
                 </div>
               )}
+
+              {/* Gerar imagens para publicação */}
+              <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <button
+                  onClick={gerarImagens}
+                  disabled={gerandoImagens || fotos.length === 0}
+                  style={{
+                    background: imageUrls.length > 0 ? 'rgba(16,185,129,0.15)' : 'var(--accent-dim)',
+                    border: `1px solid ${imageUrls.length > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(0,170,255,0.3)'}`,
+                    color: imageUrls.length > 0 ? '#6EE7B7' : 'var(--accent2)',
+                    borderRadius: 8, padding: '8px 20px', fontSize: 12, fontWeight: 600,
+                    cursor: gerandoImagens || fotos.length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: fotos.length === 0 ? 0.5 : 1, transition: 'all 0.2s',
+                  }}
+                >
+                  {gerandoImagens
+                    ? `⏳ Gerando slide ${slideAtivo + 1}/${slides.length}...`
+                    : imageUrls.length > 0
+                    ? `✓ ${imageUrls.length} imagens prontas para publicar`
+                    : '📸 Gerar imagens para publicar'}
+                </button>
+                {imageUrls.length > 0 && (
+                  <div style={{ fontSize: 10, color: 'var(--txt3)', marginTop: 6 }}>
+                    Imagens salvas no Supabase. Agora salve ou agende o post.
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <div style={{

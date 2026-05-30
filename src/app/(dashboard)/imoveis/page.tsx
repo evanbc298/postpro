@@ -20,6 +20,7 @@ export default function ImoveisPage() {
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [erroForm, setErroForm] = useState('')
   const [uploading, setUploading] = useState(false)
   const [fotos, setFotos] = useState<Foto[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
@@ -74,16 +75,24 @@ export default function ImoveisPage() {
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
+    setErroForm('')
+    if (!form.titulo.trim()) { setErroForm('O título do imóvel é obrigatório.'); return }
+    if (form.preco && isNaN(Number(form.preco))) { setErroForm('Preço deve ser um número válido.'); return }
+    if (form.area && isNaN(Number(form.area))) { setErroForm('Área deve ser um número válido.'); return }
+    if (fotos.length === 0) { setErroForm('Adicione pelo menos 1 foto para o carrossel.'); return }
+
     setSaving(true)
     const sb = createClient()
     const { data: { user } } = await sb.auth.getUser()
     await sb.from('imoveis').insert({
-      ...form, preco: Number(form.preco), area: Number(form.area),
+      ...form, preco: form.preco ? Number(form.preco) : null,
+      area: form.area ? Number(form.area) : null,
       user_id: user?.id, fotos,
     })
     setSaving(false)
     setModal(false)
     setFotos([])
+    setErroForm('')
     setForm({ titulo: '', tipo: 'Apartamento', status: 'ativo', preco: '', area: '', localizacao: '', diferenciais: '' })
     load()
   }
@@ -287,8 +296,15 @@ export default function ImoveisPage() {
                   style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 7, padding: '8px 11px', color: 'var(--txt)', fontSize: 12, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
 
+              {erroForm && (
+                <div style={{
+                  background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
+                  borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#FCA5A5', marginBottom: 12
+                }}>{erroForm}</div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <button type="button" onClick={() => { setModal(false); setFotos([]) }} style={{
+                <button type="button" onClick={() => { setModal(false); setFotos([]); setErroForm('') }} style={{
                   background: 'transparent', color: 'var(--txt2)', border: '1px solid var(--border)',
                   borderRadius: 7, padding: '7px 14px', fontSize: 12, cursor: 'pointer'
                 }}>Cancelar</button>

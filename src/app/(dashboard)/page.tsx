@@ -19,6 +19,7 @@ const statusBadge: Record<string, { label: string; color: string; bg: string }> 
 export default function HomePage() {
   const [stats, setStats] = useState<Stats>({ imoveis: 0, agendados: 0, pendentes: 0 })
   const [proximosPosts, setProximosPosts] = useState<Post[]>([])
+  const [nomeUsuario, setNomeUsuario] = useState('')
   const [tasks, setTasks] = useState<Task[]>([
     { id: 1, text: 'Configurar API key do Upload-Post', done: false, tag: 'hoje' },
     { id: 2, text: 'Cadastrar primeiro imóvel', done: false, tag: 'hoje' },
@@ -28,12 +29,15 @@ export default function HomePage() {
   useEffect(() => {
     async function load() {
       const sb = createClient()
-      const [{ count: imoveis }, { count: agendados }, { count: pendentes }, { data: posts }] = await Promise.all([
+      const [{ data: { user } }, { count: imoveis }, { count: agendados }, { count: pendentes }, { data: posts }] = await Promise.all([
+        sb.auth.getUser(),
         sb.from('imoveis').select('*', { count: 'exact', head: true }),
         sb.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'agendado'),
         sb.from('posts').select('*', { count: 'exact', head: true }).eq('status', 'rascunho'),
         sb.from('posts').select('*').not('agendado_para', 'is', null).order('agendado_para').limit(4),
       ])
+      const nome = user?.user_metadata?.nome || user?.email?.split('@')[0] || ''
+      setNomeUsuario(nome)
       setStats({ imoveis: imoveis || 0, agendados: agendados || 0, pendentes: pendentes || 0 })
       setProximosPosts(posts || [])
     }
@@ -69,7 +73,9 @@ export default function HomePage() {
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 22, fontWeight: 700 }}>{saudacao}! 👋</div>
+        <div style={{ fontSize: 22, fontWeight: 700 }}>
+          {saudacao}{nomeUsuario ? `, ${nomeUsuario}` : ''}
+        </div>
         <div style={{ fontSize: 12, color: 'var(--txt3)', marginTop: 4 }}>
           {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
