@@ -26,7 +26,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/imoveis')
+    router.push('/inicio')
   }
 
   return (

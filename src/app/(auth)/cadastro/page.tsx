@@ -31,7 +31,7 @@ export default function CadastroPage() {
       return
     }
 
-    router.push('/imoveis')
+    router.push('/inicio')
   }
 
   return (

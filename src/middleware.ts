@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
-const PROTECTED = ['/criar', '/conteudo', '/imoveis', '/agenda', '/relatorios', '/config', '/admin']
+const PROTECTED = ['/inicio', '/criar', '/conteudo', '/imoveis', '/agenda', '/relatorios', '/config', '/admin']
 const AUTH_ONLY = ['/login', '/cadastro']
 
 export async function middleware(req: NextRequest) {
@@ -38,7 +38,7 @@ export async function middleware(req: NextRequest) {
   // Usuário logado tentando acessar login/cadastro → dashboard
   if (isAuthOnly && user) {
     const url = req.nextUrl.clone()
-    url.pathname = '/imoveis'
+    url.pathname = '/inicio'
     return NextResponse.redirect(url)
   }
 
