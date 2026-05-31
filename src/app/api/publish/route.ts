@@ -12,36 +12,54 @@ export async function POST(req: NextRequest) {
   }
 
   if (!mediaUrls || mediaUrls.length === 0) {
-    return NextResponse.json({ error: 'Nenhuma imagem para publicar. Gere as imagens antes de publicar.' }, { status: 400 })
+    return NextResponse.json({ error: 'Sem imagens para publicar. Gere o carrossel antes.' }, { status: 400 })
   }
-
-  const body: Record<string, unknown> = {
-    profile,
-    platforms: plataformas,
-    caption: legenda,
-    media: mediaUrls.map((url: string) => ({ url })),
-  }
-
-  if (agendarPara) body.schedule_at = agendarPara
 
   try {
-    const res = await fetch('https://api.upload-post.com/v1/posts', {
+    const formData = new FormData()
+    formData.append('user', profile)
+    formData.append('title', legenda || '')
+    formData.append('async_upload', 'false')
+
+    // Plataformas
+    for (const p of plataformas) {
+      formData.append('platform[]', p)
+    }
+
+    // Agendamento
+    if (agendarPara) {
+      formData.append('scheduled_date', new Date(agendarPara).toISOString())
+      formData.append('timezone', 'America/Sao_Paulo')
+    }
+
+    // Baixa cada imagem e adiciona ao FormData
+    for (let i = 0; i < mediaUrls.length; i++) {
+      const imgRes = await fetch(mediaUrls[i])
+      if (!imgRes.ok) continue
+      const blob = await imgRes.blob()
+      formData.append('photos[]', blob, `slide_${i + 1}.png`)
+    }
+
+    const res = await fetch('https://api.upload-post.com/api/upload_photos', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Apikey ${apiKey}`,
       },
-      body: JSON.stringify(body),
+      body: formData,
     })
 
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
 
     if (!res.ok) {
-      return NextResponse.json({ error: data.message || 'Erro ao publicar.' }, { status: res.status })
+      return NextResponse.json({
+        error: data.message || data.error || `Erro ${res.status} do Upload-Post.`
+      }, { status: res.status })
     }
 
     return NextResponse.json({ success: true, data })
-  } catch {
-    return NextResponse.json({ error: 'Erro de conexão com o Upload-Post.' }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({
+      error: `Erro de conexão: ${err instanceof Error ? err.message : 'falha desconhecida'}`
+    }, { status: 500 })
   }
 }
