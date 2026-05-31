@@ -16,11 +16,18 @@ const tons = [
 
 const focos = ['Destaque visual', 'Localização', 'Preço e financiamento', 'Diferenciais', 'Estilo de vida']
 
+const formatos = [
+  { value: 'carrossel', label: 'Carrossel', emoji: '▦', ratio: '4/5', desc: '1080×1350' },
+  { value: 'imagem',    label: 'Imagem única', emoji: '◻', ratio: '1/1', desc: '1080×1080' },
+  { value: 'stories',  label: 'Stories',    emoji: '▯', ratio: '9/16', desc: '1080×1920' },
+]
+
 export default function CriarPage() {
   const [imoveis, setImoveis] = useState<Imovel[]>([])
   const [imovelId, setImovelId] = useState('')
   const [foco, setFoco] = useState('Destaque visual')
   const [tom, setTom] = useState('direto')
+  const [formato, setFormato] = useState('carrossel')
   const [plataformas, setPlataformas] = useState(['instagram', 'facebook'])
   const [data, setData] = useState('')
   const [hora, setHora] = useState('18:00')
@@ -53,15 +60,19 @@ export default function CriarPage() {
   const imovel = imoveis.find(i => i.id === imovelId)
   const fotos = imovel?.fotos || []
   const capa = fotos.find(f => f.is_capa) || fotos[0]
+  const formatoAtivo = formatos.find(f => f.value === formato)!
 
-  // Gera os slides com base nas fotos disponíveis
-  const slides = imovel ? [
+  // Slides variam conforme o formato
+  const todosSlides = imovel ? [
     { label: 'Capa', foto: capa?.url, texto: imovel.titulo, subtexto: imovel.preco ? `R$ ${Number(imovel.preco).toLocaleString('pt-BR')}` : '', detalhe: imovel.area ? `${imovel.area} m² · ${imovel.localizacao}` : imovel.localizacao },
     { label: 'Detalhe', foto: fotos[1]?.url || fotos[0]?.url, texto: imovel.diferenciais?.split(',')[0]?.trim() || 'Ambientes espaçosos', subtexto: '', detalhe: imovel.tipo },
     { label: 'Diferencial', foto: fotos[2]?.url || fotos[0]?.url, texto: imovel.diferenciais?.split(',')[1]?.trim() || 'Localização privilegiada', subtexto: '', detalhe: '' },
     { label: 'Localização', foto: fotos[3]?.url || fotos[0]?.url, texto: imovel.localizacao || 'Localização', subtexto: '', detalhe: 'Infraestrutura completa ao redor' },
     { label: 'CTA', foto: null, texto: config?.instagram_usuario || '@seu.perfil', subtexto: 'Fale comigo', detalhe: '' },
   ] : []
+
+  // Imagem única e Stories usam apenas o slide de capa
+  const slides = formato === 'carrossel' ? todosSlides : todosSlides.slice(0, 1)
 
   async function gerar() {
     if (!imovel) return
@@ -89,8 +100,8 @@ export default function CriarPage() {
     const agendado = status === 'agendado' && data ? new Date(`${data}T${hora}`).toISOString() : null
     await sb.from('posts').insert({
       user_id: user?.id, imovel_id: imovelId,
-      titulo: `Carrossel – ${imovel.titulo}`,
-      legenda, tipo: 'carrossel', plataformas, status,
+      titulo: `${formatoAtivo.label} – ${imovel.titulo}`,
+      legenda, tipo: formato, plataformas, status,
       agendado_para: agendado,
       media_urls: imageUrls.length > 0 ? imageUrls : null,
     })
@@ -149,7 +160,25 @@ export default function CriarPage() {
 
   return (
     <div>
-      <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Criar carrossel</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 20, fontWeight: 700 }}>Criar conteúdo</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {formatos.map(f => (
+            <button key={f.value} onClick={() => { setFormato(f.value); setSlideAtivo(0); setImageUrls([]) }} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer',
+              border: `1px solid ${formato === f.value ? 'var(--accent)' : 'var(--border)'}`,
+              background: formato === f.value ? 'var(--accent-dim)' : 'transparent',
+              color: formato === f.value ? 'var(--accent2)' : 'var(--txt2)',
+              transition: 'all .15s',
+            }}>
+              <span>{f.emoji}</span>
+              <span>{f.label}</span>
+              <span style={{ fontSize: 9, color: 'var(--txt3)' }}>{f.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 16 }}>
 
@@ -261,16 +290,19 @@ export default function CriarPage() {
         {/* Preview carrossel — Template Elegante */}
         <div>
           <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10, color: 'var(--txt2)' }}>
-            Prévia — Modelo Elegante
-            <span style={{ fontSize: 10, color: 'var(--txt3)', marginLeft: 8 }}>Clique nos slides para navegar</span>
+            Prévia — {formatoAtivo.label}
+            <span style={{ fontSize: 10, color: 'var(--txt3)', marginLeft: 8 }}>{formatoAtivo.desc} · {formato === 'carrossel' ? 'Clique nos slides para navegar' : 'slide único'}</span>
           </div>
 
           {/* Slide principal */}
           {imovel && slides.length > 0 ? (
             <>
               <div ref={slideRef} style={{
-                width: '100%', maxWidth: 320, margin: '0 auto',
-                aspectRatio: '4/5', borderRadius: 14, overflow: 'hidden',
+                width: '100%',
+                maxWidth: formato === 'stories' ? 220 : formato === 'imagem' ? 300 : 320,
+                margin: '0 auto',
+                aspectRatio: formatoAtivo.ratio,
+                borderRadius: 14, overflow: 'hidden',
                 position: 'relative', background: '#0B1120',
                 boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
               }}>
