@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 
 export default function ConfigPage() {
   const [uploadPostKey, setUploadPostKey] = useState('')
+  const [uploadPostProfile, setUploadPostProfile] = useState('')
   const [instagramUsuario, setInstagramUsuario] = useState('')
   const [facebookPagina, setFacebookPagina] = useState('')
   const [tom, setTom] = useState('direto')
@@ -23,6 +24,7 @@ export default function ConfigPage() {
       const { data } = await sb.from('config_cliente').select('*').eq('user_id', user.id).single()
       if (data) {
         setUploadPostKey(data.upload_post_key || '')
+        setUploadPostProfile(data.upload_post_profile || '')
         setInstagramUsuario(data.instagram_usuario || '')
         setFacebookPagina(data.facebook_pagina || '')
         setTom(data.tom_legenda || 'direto')
@@ -41,6 +43,7 @@ export default function ConfigPage() {
     await sb.from('config_cliente').upsert({
       user_id: user?.id,
       upload_post_key: uploadPostKey,
+      upload_post_profile: uploadPostProfile,
       instagram_usuario: instagramUsuario,
       facebook_pagina: facebookPagina,
       tom_legenda: tom,
@@ -130,9 +133,16 @@ export default function ConfigPage() {
         {card(<>
           {label('Upload-Post — publicação automática',
             'Cole aqui a API key da sua conta no upload-post.com. Sem ela os posts não serão publicados automaticamente.')}
-          <div style={{ marginBottom: 6 }}>
+          <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--txt2)', marginBottom: 5 }}>API Key</div>
             {input(uploadPostKey, setUploadPostKey, 'Cole sua API key aqui...')}
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--txt2)', marginBottom: 5 }}>Nome do perfil (Profile)</div>
+            {input(uploadPostProfile, setUploadPostProfile, 'ex: app')}
+            <div style={{ fontSize: 10, color: 'var(--txt3)', marginTop: 4 }}>
+              O nome do perfil que aparece no painel do Upload-Post.
+            </div>
           </div>
           <div style={{
             marginTop: 10, padding: '8px 12px', background: 'var(--accent-dim)',

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase'
 type Post = {
   id: string; titulo: string; legenda: string; tipo: string
   plataformas: string[]; status: string; agendado_para: string
-  created_at: string; imovel_id: string
+  created_at: string; imovel_id: string; media_urls: string[] | null
 }
 
 type Imovel = { id: string; fotos: { url: string; is_capa: boolean }[] }
@@ -53,7 +53,7 @@ export default function ConteudoPage() {
 
     const sb = createClient()
     const { data: { user } } = await sb.auth.getUser()
-    const { data: config } = await sb.from('config_cliente').select('upload_post_key').eq('user_id', user?.id).single()
+    const { data: config } = await sb.from('config_cliente').select('upload_post_key, upload_post_profile').eq('user_id', user?.id).single()
 
     if (!config?.upload_post_key) {
       setErros(prev => ({ ...prev, [post.id]: 'Configure a API key do Upload-Post em Configurações.' }))
@@ -61,13 +61,14 @@ export default function ConteudoPage() {
       return
     }
 
-    // Pega as fotos do imóvel
+    // Usa as imagens geradas do post ou as fotos do imóvel como fallback
     const imovel = imoveis.find(i => i.id === post.imovel_id)
-    const fotos = imovel?.fotos || []
-    const mediaUrls = fotos.map(f => f.url)
+    const mediaUrls: string[] = post.media_urls?.length
+      ? post.media_urls
+      : (imovel?.fotos || []).map((f: { url: string }) => f.url)
 
     if (mediaUrls.length === 0) {
-      setErros(prev => ({ ...prev, [post.id]: 'Imóvel sem fotos. Adicione fotos antes de publicar.' }))
+      setErros(prev => ({ ...prev, [post.id]: 'Sem imagens para publicar. Gere o carrossel antes.' }))
       setPublicando(null)
       return
     }
@@ -77,6 +78,7 @@ export default function ConteudoPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey: config.upload_post_key,
+        profile: config.upload_post_profile || '',
         plataformas: post.plataformas,
         legenda: post.legenda,
         mediaUrls,

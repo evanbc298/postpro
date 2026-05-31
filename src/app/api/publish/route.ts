@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const { apiKey, plataformas, legenda, mediaUrls, agendarPara } = await req.json()
+  const { apiKey, profile, plataformas, legenda, mediaUrls, agendarPara } = await req.json()
 
   if (!apiKey) {
     return NextResponse.json({ error: 'API key do Upload-Post não configurada. Acesse Configurações.' }, { status: 400 })
   }
 
+  if (!profile) {
+    return NextResponse.json({ error: 'Nome do perfil não configurado. Acesse Configurações.' }, { status: 400 })
+  }
+
   if (!mediaUrls || mediaUrls.length === 0) {
-    return NextResponse.json({ error: 'Nenhuma imagem para publicar.' }, { status: 400 })
+    return NextResponse.json({ error: 'Nenhuma imagem para publicar. Gere as imagens antes de publicar.' }, { status: 400 })
   }
 
   const body: Record<string, unknown> = {
+    profile,
     platforms: plataformas,
     caption: legenda,
     media: mediaUrls.map((url: string) => ({ url })),
